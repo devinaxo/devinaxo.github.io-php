@@ -26,7 +26,9 @@ jobs:
           timeout: 190000
           log-level: verbose
           exclude: |
-            .git*
-            .github*
+            **/.git*
+            **/.git*/**
+            **/.github*
+            **/.github*/**
             README.md
             tailwind.config.js
