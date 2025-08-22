@@ -23,7 +23,7 @@ jobs:
           local-dir: ./
           server-dir: /
           timeout: 190000
-          log-level: debug
+          log-level: verbose
           exclude: |
             .git*
             .github*
