@@ -209,6 +209,7 @@ $(document).ready(function(){
             renderProjectsTable(data);
         },
         error: function(xhr, status, error) {
+            let errorMsg = 'Failed to load projects.';
             if (xhr.responseText) {
                 try {
                     const errData = JSON.parse(xhr.responseText);
@@ -220,7 +221,7 @@ $(document).ready(function(){
                 }
             }
             const tbody = $("#win1 table.interactive tbody");
-            tbody.html('<tr><td colspan="4"> Failed to load projects. </td></tr>');
+            tbody.html('<tr><td colspan="4">' + errorMsg + '</td></tr>');
         }
     });
 });
