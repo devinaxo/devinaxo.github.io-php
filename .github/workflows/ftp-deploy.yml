@@ -21,7 +21,7 @@ jobs:
           protocol: ftps
           port: ${{ secrets.FTP_PORT }}
           local-dir: ./
-          server-dir: /
+          server-dir: /www/
           timeout: 190000
           log-level: verbose
           exclude: |
