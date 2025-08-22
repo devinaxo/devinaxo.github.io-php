@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 
 $conn = new mysqli($host, $username, $password, $dbname);
 if ($conn->connect_error) {
-    log_debug('Database connection failed: ' . $conn->connect_error);
+    error_log('Database connection failed: ' . $conn->connect_error);
     http_response_code(500);
     exit;
 }
@@ -19,7 +19,7 @@ $sql = "SELECT p.id, p.name, p.url, p.icon, p.size, p.description, t.name AS typ
         LEFT JOIN type t ON p.type_id = t.id";
 $result = $conn->query($sql);
 if (!$result) {
-    log_debug('project fetch query failed: ' . $conn->error);
+    error_log('project fetch query failed: ' . $conn->error);
     http_response_code(500);
     exit;
 }
@@ -30,14 +30,14 @@ while ($row = $result->fetch_assoc()) {
     $tech_sql = "SELECT tech.name FROM project_technology pt JOIN technology tech ON pt.technology_id = tech.id WHERE pt.project_id = ?";
     $stmt = $conn->prepare($tech_sql);
     if (!$stmt) {
-        log_debug('tech_sql query prepare failed: ' . $conn->error);
+        error_log('tech_sql query prepare failed: ' . $conn->error);
         continue;
     }
     $stmt->bind_param('i', $row['id']);
     $stmt->execute();
     $tech_result = $stmt->get_result();
     if (!$tech_result) {
-        log_debug('tech_result query failed: ' . $stmt->error);
+        error_log('tech_result query failed: ' . $stmt->error);
     }
     while ($tech = $tech_result->fetch_assoc()) {
         $row['technologies'][] = $tech;
@@ -47,6 +47,6 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $conn->close();
-log_debug('Returning ' . count($projects) . ' projects');
+error_log('Returning ' . count($projects) . ' projects');
 echo json_encode($projects);
 ?>
