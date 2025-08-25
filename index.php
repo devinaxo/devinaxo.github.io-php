@@ -116,12 +116,10 @@ if (!$host || !$username || !$password || !$dbname) {
                 <?php if (!empty($projects)): ?>
                   <?php foreach ($projects as $project): ?>
                     <?php if (!empty($project['url'])): ?>
-                      <tr class="cursor-pointer hover:bg-gray-100" onclick="window.open('<?= htmlspecialchars($project['url']) ?>', '_blank')">
+                      <tr class="cursor-pointer" onclick="window.open('<?= htmlspecialchars($project['url']) ?>', '_blank')">
                         <td class="flex items-center gap-2">
                           <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
-                          <span class="text-blue-600 hover:underline hover:text-white">
-                            <?= htmlspecialchars($project['name']) ?>
-                          </span>
+                          <?= htmlspecialchars($project['name']) ?>
                         </td>
                         <td><?= htmlspecialchars($project['size']) ?></td>
                         <td><?= htmlspecialchars($project['type_name']) ?></td>
