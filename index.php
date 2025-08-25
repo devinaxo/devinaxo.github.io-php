@@ -116,9 +116,9 @@ if (!$host || !$username || !$password || !$dbname) {
                 <?php if (!empty($projects)): ?>
                   <?php foreach ($projects as $project): ?>
                     <?php if (!empty($project['url'])): ?>
-                      <tr class="cursor-pointer hover:bg-gray-100">
-                        <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank"
-                          class="text-blue-600 hover:underline">
+                      <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank"
+                        class="text-blue-600 hover:underline">
+                        <tr class="cursor-pointer hover:bg-gray-100">
                           <td class="flex items-center gap-2">
                             <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
                             <?= htmlspecialchars($project['name']) ?>
@@ -133,8 +133,8 @@ if (!$host || !$username || !$password || !$dbname) {
                             echo implode(', ', $techs);
                             ?>
                           </td>
-                        </a>
-                      </tr>
+                        </tr>
+                      </a>
                     <?php else: ?>
                       <tr class="opacity-60">
                         <td class="flex items-center gap-2">
