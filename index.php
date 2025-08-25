@@ -115,22 +115,45 @@ if (!$host || !$username || !$password || !$dbname) {
               <tbody>
                 <?php if (!empty($projects)): ?>
                   <?php foreach ($projects as $project): ?>
-                    <tr>
-                      <td class="flex items-center gap-2 cursor-pointer">
-                        <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
-                        <?= htmlspecialchars($project['name']) ?>
-                      </td>
-                      <td><?= htmlspecialchars($project['size']) ?></td>
-                      <td><?= htmlspecialchars($project['type_name']) ?></td>
-                      <td>
-                        <?php
-                        $techs = array_map(function ($tech) {
-                          return htmlspecialchars($tech['name']);
-                        }, $project['technologies']);
-                        echo implode(', ', $techs);
-                        ?>
-                      </td>
-                    </tr>
+                    <?php if (!empty($project['url'])): ?>
+                      <tr class="cursor-pointer hover:bg-gray-100" onclick="window.open('<?= htmlspecialchars($project['url']) ?>', '_blank')">
+                        <td class="flex items-center gap-2">
+                          <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
+                          <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank" class="text-blue-600 hover:underline">
+                            <?= htmlspecialchars($project['name']) ?>
+                          </a>
+                        </td>
+                        <td><?= htmlspecialchars($project['size']) ?></td>
+                        <td><?= htmlspecialchars($project['type_name']) ?></td>
+                        <td>
+                          <?php
+                          $techs = array_map(function ($tech) {
+                            return htmlspecialchars($tech['name']);
+                          }, $project['technologies']);
+                          echo implode(', ', $techs);
+                          ?>
+                        </td>
+                      </tr>
+                    <?php else: ?>
+                      <tr class="opacity-60">
+                        <td class="flex items-center gap-2">
+                          <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
+                          <span class="text-gray-500">
+                            <?= htmlspecialchars($project['name']) ?> (No URL available)
+                          </span>
+                        </td>
+                        <td><?= htmlspecialchars($project['size']) ?></td>
+                        <td><?= htmlspecialchars($project['type_name']) ?></td>
+                        <td>
+                          <?php
+                          $techs = array_map(function ($tech) {
+                            return htmlspecialchars($tech['name']);
+                          }, $project['technologies']);
+                          echo implode(', ', $techs);
+                          ?>
+                        </td>
+                      </tr>
+                    <?php endif; ?>
                   <?php endforeach; ?>
                 <?php else: ?>
                   <tr>
