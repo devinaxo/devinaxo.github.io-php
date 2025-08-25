@@ -8,39 +8,39 @@ $password = getenv('DB_PASS');
 $dbname = getenv('DB_NAME');
 
 if (!$host || !$username || !$password || !$dbname) {
-    $debug_info = 'Database environment variables not set';
+  $debug_info = 'Database environment variables not set';
 } else {
-    $conn = new mysqli($host, $username, $password, $dbname);
-    if ($conn->connect_error) {
-        $debug_info = 'Database connection failed: ' . $conn->connect_error;
-    } else {
-        $sql = "SELECT p.id, p.name, p.url, p.icon, p.size, p.description, t.name AS type_name
+  $conn = new mysqli($host, $username, $password, $dbname);
+  if ($conn->connect_error) {
+    $debug_info = 'Database connection failed: ' . $conn->connect_error;
+  } else {
+    $sql = "SELECT p.id, p.name, p.url, p.icon, p.size, p.description, t.name AS type_name
                 FROM project p
                 LEFT JOIN type t ON p.type_id = t.id";
-        $result = $conn->query($sql);
-        if (!$result) {
-            $debug_info = 'Project fetch query failed: ' . $conn->error;
-        } else {
-            while ($row = $result->fetch_assoc()) {
-                $row['technologies'] = [];
-                $tech_sql = "SELECT tech.name FROM project_technology pt JOIN technology tech ON pt.technology_id = tech.id WHERE pt.project_id = ?";
-                $stmt = $conn->prepare($tech_sql);
-                if ($stmt) {
-                    $stmt->bind_param('i', $row['id']);
-                    $stmt->execute();
-                    $tech_result = $stmt->get_result();
-                    if ($tech_result) {
-                        while ($tech = $tech_result->fetch_assoc()) {
-                            $row['technologies'][] = $tech;
-                        }
-                    }
-                    $stmt->close();
-                }
-                $projects[] = $row;
+    $result = $conn->query($sql);
+    if (!$result) {
+      $debug_info = 'Project fetch query failed: ' . $conn->error;
+    } else {
+      while ($row = $result->fetch_assoc()) {
+        $row['technologies'] = [];
+        $tech_sql = "SELECT tech.name FROM project_technology pt JOIN technology tech ON pt.technology_id = tech.id WHERE pt.project_id = ?";
+        $stmt = $conn->prepare($tech_sql);
+        if ($stmt) {
+          $stmt->bind_param('i', $row['id']);
+          $stmt->execute();
+          $tech_result = $stmt->get_result();
+          if ($tech_result) {
+            while ($tech = $tech_result->fetch_assoc()) {
+              $row['technologies'][] = $tech;
             }
+          }
+          $stmt->close();
         }
-        $conn->close();
+        $projects[] = $row;
+      }
     }
+    $conn->close();
+  }
 }
 ?>
 <!DOCTYPE html>
@@ -117,22 +117,23 @@ if (!$host || !$username || !$password || !$dbname) {
                   <?php foreach ($projects as $project): ?>
                     <?php if (!empty($project['url'])): ?>
                       <tr class="cursor-pointer hover:bg-gray-100">
-                        <td class="flex items-center gap-2">
-                          <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
-                          <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank" class="text-blue-600 hover:underline">
+                        <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank"
+                          class="text-blue-600 hover:underline">
+                          <td class="flex items-center gap-2">
+                            <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
                             <?= htmlspecialchars($project['name']) ?>
-                          </a>
-                        </td>
-                        <td><?= htmlspecialchars($project['size']) ?></td>
-                        <td><?= htmlspecialchars($project['type_name']) ?></td>
-                        <td>
-                          <?php
-                          $techs = array_map(function ($tech) {
-                            return htmlspecialchars($tech['name']);
-                          }, $project['technologies']);
-                          echo implode(', ', $techs);
-                          ?>
-                        </td>
+                          </td>
+                          <td><?= htmlspecialchars($project['size']) ?></td>
+                          <td><?= htmlspecialchars($project['type_name']) ?></td>
+                          <td>
+                            <?php
+                            $techs = array_map(function ($tech) {
+                              return htmlspecialchars($tech['name']);
+                            }, $project['technologies']);
+                            echo implode(', ', $techs);
+                            ?>
+                          </td>
+                        </a>
                       </tr>
                     <?php else: ?>
                       <tr class="opacity-60">
@@ -157,7 +158,8 @@ if (!$host || !$username || !$password || !$dbname) {
                   <?php endforeach; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="4">No projects found. <?= $debug_info ? 'Debug: ' . htmlspecialchars($debug_info) : '' ?></td>
+                    <td colspan="4">No projects found. <?= $debug_info ? 'Debug: ' . htmlspecialchars($debug_info) : '' ?>
+                    </td>
                   </tr>
                 <?php endif; ?>
               </tbody>
