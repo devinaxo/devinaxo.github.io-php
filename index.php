@@ -116,7 +116,7 @@ if (!$host || !$username || !$password || !$dbname) {
                 <?php if (!empty($projects)): ?>
                   <?php foreach ($projects as $project): ?>
                     <?php if (!empty($project['url'])): ?>
-                      <tr class="cursor-pointer hover:bg-gray-100" onclick="window.open('<?= htmlspecialchars($project['url']) ?>', '_blank')">
+                      <tr class="cursor-pointer hover:bg-gray-100">
                         <td class="flex items-center gap-2">
                           <img src="<?= htmlspecialchars($project['icon']) ?>" alt="Project icon" class="w-4 h-4">
                           <a href="<?= htmlspecialchars($project['url']) ?>" target="_blank" class="text-blue-600 hover:underline">
