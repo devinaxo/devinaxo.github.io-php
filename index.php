@@ -167,7 +167,7 @@ if (!$host || !$username || !$password || !$dbname) {
             <img src="img/project-icons/winrep-1.png" alt class="window-icon">Add New Project
           </div>
           <div class="title-bar-controls">
-            <button aria-label="Close" class="window-close" data-icon="icon-new" data-window="win-new"></button>
+            <button aria-label="Close" class="window-close-new-project" data-icon="icon-new" data-window="win-new"></button>
           </div>
         </div>
         <div class="window-body">

@@ -76,6 +76,11 @@ $(document).ready(function(){
         $('#' + currIcon).attr('src', 'img/directory_closed_cool-0.png');
     })
 
+    $('.window-close-new-project').on('click', function(){
+        currWin = $(this).data('window');
+        $('#' + currWin).hide();
+    })
+
     $('.window-minimize').on('click', function(){
         currWin = $(this).data('window');
         $('#' + currWin).hide();
