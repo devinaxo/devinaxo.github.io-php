@@ -56,6 +56,19 @@ $(document).ready(function(){
         $('#' + currIcon).attr('src', 'img/directory_open_cool-0.png');
     })
 
+    const clickableNewProject = $('.clickable-new-project');
+    clickableNewProject.on('click', function(){
+        $(this).css('background-color', 'gray');
+    });
+
+    $('.clickable-new-project').on('dblclick', function(){
+        $('.needs-closing').hide();
+        $(this).css('background-color', 'transparent');
+        currWin = $(this).data('window');
+        $('#' + currWin).show();
+        currIcon = $(this).data('icon');
+    })
+
     $('.window-close').on('click', function(){
         currWin = $(this).data('window');
         $('#' + currWin).hide();
@@ -75,6 +88,16 @@ $(document).ready(function(){
         currIcon = $(this).data('icon');
         $('#' + currIcon).attr('src', 'img/portfolio-btn-pressed.png');
     })
+
+        // Icon select preview for New Project form
+        const iconSelect = document.getElementById('icon-select');
+        const iconPreview = document.getElementById('icon-preview');
+        if (iconSelect && iconPreview) {
+            iconSelect.addEventListener('change', function() {
+                const selected = iconSelect.value;
+                iconPreview.src = selected ? selected : '';
+            });
+        }
 
     $(document).ready(function() {
         // Handle icon-based modal triggers (existing functionality)

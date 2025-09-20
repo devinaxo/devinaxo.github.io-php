@@ -1,11 +1,50 @@
 <?php
 $projects = [];
 $debug_info = '';
+$new_project_message = '';
+
+if (file_exists(__DIR__ . '/.env')) {
+  $lines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  foreach ($lines as $line) {
+    if (strpos(trim($line), '#') === 0) continue;
+    list($name, $value) = explode('=', $line, 2);
+    putenv(trim($name) . '=' . trim($value));
+  }
+}
 
 $host = getenv('DB_HOST');
 $username = getenv('DB_USER');
 $password = getenv('DB_PASS');
 $dbname = getenv('DB_NAME');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
+  $conn = new mysqli($host, $username, $password, $dbname);
+  if ($conn->connect_error) {
+    $new_project_message = 'Database connection failed: ' . $conn->connect_error;
+  } else {
+  $name = $conn->real_escape_string($_POST['name'] ?? '');
+  $url = $conn->real_escape_string(isset($_POST['url']) ? $_POST['url'] : '');
+  $icon = $conn->real_escape_string($_POST['icon'] ?? '');
+  $size = $conn->real_escape_string($_POST['size'] ?? '');
+  $type_id = intval($_POST['type_id'] ?? 0);
+  $technologies = $_POST['technologies'] ?? [];
+
+    $insert_sql = "INSERT INTO project (name, url, icon, size, type_id) VALUES ('$name', '$url', '$icon', '$size', $type_id)";
+    if ($conn->query($insert_sql)) {
+      $project_id = $conn->insert_id;
+      foreach ($technologies as $tech_id) {
+        $tech_id = intval($tech_id);
+        $conn->query("INSERT INTO project_technology (project_id, technology_id) VALUES ($project_id, $tech_id)");
+      }
+      $conn->close();
+      header('Location: ' . $_SERVER['PHP_SELF'] . '?success=1');
+      exit;
+    } else {
+      $new_project_message = "Error adding project: " . $conn->error;
+    }
+    $conn->close();
+  }
+}
 
 if (!$host || !$username || !$password || !$dbname) {
   $debug_info = 'Database environment variables not set';
@@ -39,6 +78,16 @@ if (!$host || !$username || !$password || !$dbname) {
         $projects[] = $row;
       }
     }
+    $types = [];
+    $technologies = [];
+    $type_result = $conn->query("SELECT id, name FROM type");
+    if ($type_result) {
+      while ($row = $type_result->fetch_assoc()) $types[] = $row;
+    }
+    $tech_result = $conn->query("SELECT id, name FROM technology");
+    if ($tech_result) {
+      while ($row = $tech_result->fetch_assoc()) $technologies[] = $row;
+    }
     $conn->close();
   }
 }
@@ -61,14 +110,30 @@ if (!$host || !$username || !$password || !$dbname) {
   <script src="js/jquery.ui.touch-punch.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
   <script type="text/javascript">
-    (function () {
+    (function() {
       emailjs.init({
         publicKey: "KA9ygHqE3XL4BIUP5",
       });
     })();
   </script>
 </head>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    new TomSelect('#technologies', {
+      plugins: ['remove_button'],
+      maxOptions: 1000,
+      create: false,
+      sortField: {
+        field: "text",
+        direction: "asc"
+      }
+    });
+  });
+</script>
 
 <body>
   <div class="desktop">
@@ -89,10 +154,78 @@ if (!$host || !$username || !$password || !$dbname) {
         <img class="unselectable image-folder" src="img/directory_closed_cool-0.png" alt="Folder icon" id="icon2">
         <p class="icon-title white unselectable">Multimedia</p>
       </div>
-      <div class="icon-spot empty"></div>
+      <div class="icon-spot clickable-new-project" data-icon="icon-new" data-window="win-new">
+        <img class="unselectable" src="img/project-icons/winrep-1.png" alt="New Project icon" id="icon-new">
+        <p class="icon-title white unselectable">New Project</p>
+      </div>
       <div class="icon-spot empty"></div>
     </div>
     <div class="centered min-w-[35%] max-w-[50%]">
+      <div class="window needs-closing" id="win-new" style="display:none;">
+        <div class="title-bar" id="title-new">
+          <div class="title-bar-text unselectable">
+            <img src="img/project-icons/winrep-1.png" alt class="window-icon">Add New Project
+          </div>
+          <div class="title-bar-controls">
+            <button aria-label="Close" class="window-close" data-icon="icon-new" data-window="win-new"></button>
+          </div>
+        </div>
+        <div class="window-body">
+          <form id="new-project-form" method="POST" class="flex flex-col gap-4 p-4 w-full max-w-2xl mx-auto">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="name">Name:</label>
+              <input type="text" name="name" id="name" required class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="url">Repo URL:</label>
+              <input type="text" name="url" id="url" required class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="icon">Icon:</label>
+                <select name="icon" id="icon-select" required class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select icon</option>
+                  <?php
+                    $icon_dir = 'img/project-icons';
+                    $icon_files = array_filter(scandir($icon_dir), function($f) {
+                      return preg_match('/\.(png|jpg|jpeg|gif)$/i', $f);
+                    });
+                    foreach ($icon_files as $icon): ?>
+                      <option value="<?= $icon_dir . '/' . $icon ?>"><?= $icon ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="text-sm text-gray-500">Preview:</span>
+                  <img id="icon-preview" src="" alt="" class="w-8 h-8 border rounded bg-white">
+                </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="size">Size:</label>
+              <input type="text" name="size" id="size" required class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="type_id">Type:</label>
+              <select name="type_id" id="type_id" required class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select type</option>
+                <?php if (isset($types)) foreach ($types as $type): ?>
+                  <option value="<?= $type['id'] ?>"><?= htmlspecialchars($type['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="technologies">Technologies:</label>
+              <select name="technologies[]" id="technologies" multiple required class="w-full max-w-xl px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <?php if (isset($technologies)) foreach ($technologies as $tech): ?>
+                  <option value="<?= $tech['id'] ?>"><?= htmlspecialchars($tech['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex flex-row items-center justify-center gap-2">
+              <img src="img/project-icons/winrep-1.png" alt class="address-sendicon w-5 h-5"> Add Project
+            </button>
+          </form>
+          <div id="new-project-message" class="black"><?= isset($new_project_message) ? htmlspecialchars($new_project_message) : '' ?></div>
+        </div>
+      </div>
       <div class="window needs-closing" id="win1">
         <div class="title-bar" id="title1">
           <div class="title-bar-text unselectable"><img src="img/directory_closed_cool-0.png" alt
